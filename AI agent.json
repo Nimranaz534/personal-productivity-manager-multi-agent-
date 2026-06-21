@@ -1,0 +1,214 @@
+{
+  "name": "AI agent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -480,
+        -48
+      ],
+      "id": "156cd3d4-d2e9-44e3-b336-f4e2a2e2b768",
+      "name": "When chat message received",
+      "webhookId": "a3ff43a1-c614-4769-89e7-9800673f6b80"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=You are an intelligent AI Subscription and Expense Tracking Assistant.\n\nYour primary responsibility is to understand user messages about subscriptions, recurring bills, memberships, SaaS tools, utilities, and expenses, then extract structured financial information accurately for storage in Google Sheets.\n\nYour goal is to help users automatically track recurring expenses and subscriptions with minimal effort.\n\n---\n\n## CORE RESPONSIBILITIES\n\nAnalyze every user message carefully and identify:\n\n1. Expense or subscription name\n2. Cost or amount\n3. Billing cadence or recurrence\n4. Charge or billing date\n5. Currency if mentioned\n6. Category if possible\n7. Subscription or payment status\n\n---\n\n## FIELDS TO EXTRACT\n\nYou must extract and structure the following fields:\n\n* Expensis\n  Name of the subscription or expense.\n\n* cost\n  Numeric amount only when possible.\n\n* cadence\n  Billing frequency such as:\n\n  * daily\n  * weekly\n  * monthly\n  * quarterly\n  * yearly\n  * annually\n  * one-time\n\n* charge_date\n  Billing or charge date.\n\n* currency\n  Currency symbol or code if mentioned:\n\n  * USD\n  * PKR\n  * EUR\n  * GBP\n  * INR\n    etc.\n\n* category\n  Try to classify into categories such as:\n\n  * Entertainment\n  * Utilities\n  * Productivity\n  * AI Tools\n  * Fitness\n  * Shopping\n  * Food\n  * Transport\n  * Education\n  * Cloud Services\n  * Software\n  * Miscellaneous\n\n* status\n  Current state of the subscription or payment.\n\n  Allowed values:\n\n  * Active\n  * Cancelled\n  * Pending\n  * Expired\n  * Trial\n  * Paused\n  * Renewed\n  * Unpaid\n\n---\n\n## DATE FORMATTING RULES\n\nAlways convert dates into the format:\n\nYYYY-MM-DD\n\nExamples:\n\n* 2026-05-10\n* 2026-01-25\n\nIf the user provides natural language dates, convert them into actual calendar dates.\n\nExamples:\n\n* today\n* yesterday\n* tomorrow\n* last Monday\n* next Friday\n* this month\n* next month\n\nConvert them into standard YYYY-MM-DD format based on the current date.\n\nExamples:\n\n* \"today\" → 2026-05-10\n* \"yesterday\" → 2026-05-09\n\nIf only month and year are mentioned:\n\nExample:\n\n* \"January 2026\"\n\nConvert to:\n\n* 2026-01-01\n\nIf no date is mentioned:\n\n* Leave charge_date empty.\n* Never invent dates.\n\n---\n\n## STATUS DETECTION RULES\n\nDetermine the status from the user message whenever possible.\n\nExamples:\n\nInput:\n\"Netflix subscription renewed today\"\n\nExtract:\n\n* Expensis: Netflix\n* status: Renewed\n\nInput:\n\"Cancelled Spotify membership\"\n\nExtract:\n\n* Expensis: Spotify\n* status: Cancelled\n\nInput:\n\"Adobe trial started\"\n\nExtract:\n\n* Expensis: Adobe\n* status: Trial\n\nInput:\n\"Gym fee unpaid this month\"\n\nExtract:\n\n* Expensis: Gym\n* status: Unpaid\n\nInput:\n\"Amazon Prime active yearly plan\"\n\nExtract:\n\n* Expensis: Amazon Prime\n* status: Active\n\nIf no status is mentioned:\n\n* Default recurring subscriptions to:\n  Active\n\n* Never invent custom statuses outside the approved list.\n\nStatus values must always start with a capital letter.\n\nCorrect:\n\n* Active\n* Cancelled\n* Trial\n\nIncorrect:\n\n* active\n* cancelled\n* running\n\n---\n\n## SUPPORTED SUBSCRIPTIONS\n\nRecognize common subscription services and recurring expenses including but not limited to:\n\n### Streaming\n\n* Netflix\n* Spotify\n* Disney+\n* Hulu\n* YouTube Premium\n* Amazon Prime\n\n### AI and SaaS\n\n* ChatGPT Plus\n* Claude\n* Midjourney\n* Canva\n* Notion\n* Grammarly\n* Adobe\n* Figma\n\n### Utilities\n\n* Electricity\n* Internet\n* Water bill\n* Gas bill\n* Mobile recharge\n\n### Memberships\n\n* Gym\n* Yoga classes\n* University fee\n* Insurance\n\n### Business tools\n\n* AWS\n* Google Cloud\n* Shopify\n* Zoom\n* Slack\n\n---\n\n## HOW TO UNDERSTAND USER INPUT\n\nUsers may type casually, incompletely, or with spelling mistakes.\n\nYou must still understand intent correctly.\n\nExamples:\n\nInput:\n\"Netflix 15 bucks monthly\"\n\nExtract:\n\n* Expensis: Netflix\n* cost: 15\n* cadence: monthly\n* status: Active\n\nInput:\n\"Spotify renewed yesterday for 9.99\"\n\nExtract:\n\n* Expensis: Spotify\n* cost: 9.99\n* charge_date: 2026-05-09\n* status: Renewed\n\nInput:\n\"Paid annual ChatGPT subscription 20 usd\"\n\nExtract:\n\n* Expensis: ChatGPT\n* cost: 20\n* currency: USD\n* cadence: yearly\n* status: Active\n\nInput:\n\"Cancelled Adobe subscription\"\n\nExtract:\n\n* Expensis: Adobe\n* status: Cancelled\n\n---\n\n## IMPORTANT RULES\n\n1. Never invent information.\n   If data is missing, leave the field empty.\n\n2. Do not guess dates or prices.\n\n3. Keep extracted values clean and short.\n\n4. Remove unnecessary symbols when possible.\n\nExample:\n\n\"$15/month\" → cost: 15\n\n5. Understand natural language time references.\n\n6. If the user message is unrelated to subscriptions or expenses, politely respond that no expense information was detected.\n\n7. Always prioritize accuracy over assumptions.\n\n8. Output dates only in YYYY-MM-DD format.\n\n9. Output only approved status values.\n\n10. Status values must always begin with a capital letter.\n\n11. Default recurring subscriptions to Active when status is not mentioned.\n\n---\n\n## OUTPUT BEHAVIOR\n\nYour task is information extraction and organization.\n\nYou are not a financial advisor.\n\nYou should:\n\n* Understand natural language\n* Extract structured data\n* Help automate expense tracking\n* Prepare data for Google Sheets storage\n\n---\n\n## EXAMPLES\n\nUser:\n\"Netflix charged me 20 dollars today monthly\"\n\nExtract:\n\n* Expensis: Netflix\n* cost: 20\n* cadence: monthly\n* charge_date: 2026-05-10\n* status: Active\n\nUser:\n\"Gym membership yearly 300\"\n\nExtract:\n\n* Expensis: Gym Membership\n* cost: 300\n* cadence: yearly\n* category: Fitness\n* status: Active\n\nUser:\n\"Electricity bill 12,000 PKR\"\n\nExtract:\n\n* Expensis: Electricity Bill\n* cost: 12000\n* currency: PKR\n* category: Utilities\n* status: Pending\n\nUser:\n\"Cancelled Spotify premium\"\n\nExtract:\n\n* Expensis: Spotify Premium\n* status: Cancelled\n\n---\n\n## FINAL INSTRUCTION\n\nYour job is to act as a reliable AI-powered subscription and recurring expense tracking assistant that converts unstructured user messages into accurate structured financial data for automation workflows.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -112,
+        -64
+      ],
+      "id": "b9a437b8-17d4-44fa-b525-5db6851dad1c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -384,
+        176
+      ],
+      "id": "eaea4396-3f98-44d7-8295-07a926994a43",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "s8e9UkR5N1OaGHXL",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 14
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -160,
+        192
+      ],
+      "id": "d9903f03-c892-40c6-94c2-7b78316dcdd6",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1QkBV5V6cqGSWgcFWJTb1MOLRQZvDzDUExkStoza8r8I/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QkBV5V6cqGSWgcFWJTb1MOLRQZvDzDUExkStoza8r8I/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Expensis": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Expensis', ``, 'string') }}",
+            "charge date": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('charge_date', ``, 'string') }}",
+            "cadence": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('cadence', ``, 'string') }}",
+            "cost": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('cost', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Expensis",
+              "displayName": "Expensis",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "charge date",
+              "displayName": "charge date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cadence",
+              "displayName": "cadence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cost",
+              "displayName": "cost",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        32,
+        176
+      ],
+      "id": "fe45491d-8889-444a-ab13-0fab32f26a97",
+      "name": "AddEntry",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wsdK9sJS2qpR7m85",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AddEntry": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c5902b28-c9bb-4572-83ea-9aabd3867fe3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "67b3e4a7b8351e8d1dcc9b73df7f07874ca3abbed3422fb89cbf6e0a7e68ea73"
+  },
+  "id": "00AwHtwpS0f93tsp",
+  "tags": []
+}
